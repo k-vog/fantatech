@@ -151,13 +151,13 @@ int main(int argc, const char* argv[])
       G.options |= OPT_YES;
       nfiles -= 1;
     } else if (argv[i][0] == '-') {
-      printf("Error: Unknown option %s. See ftconv --help\n", argv[i]);
+      fprintf(stderr, "Error: Unknown option %s. See ftconv --help\n", argv[i]);
       return EXIT_FAILURE;
     }
   }
 
   if (nfiles <= 0) {
-    printf("Error: No files supplied\n");
+    fprintf(stderr, "Error: No files supplied\n");
     return EXIT_FAILURE;
   }
 
@@ -219,7 +219,8 @@ int main(int argc, const char* argv[])
         }
         pack.Close();
       } else {
-        printf("Error: %s\n", SDL_GetError());
+        fprintf(stderr, "Error: %s\n", SDL_GetError());
+        return EXIT_FAILURE;
       }
     }
     return EXIT_SUCCESS;
@@ -231,19 +232,19 @@ int main(int argc, const char* argv[])
     if (G.last_file->subscript) {
       printf("   as %s\n", G.last_file->subscript);
     }
-    printf("Not yet implemented :(\n");
+    fprintf(stderr, "Not yet implemented :(\n");
     return EXIT_FAILURE;
   }
 
   // User wants to unpack
   if (G.first_file->is_archive) {
     if (!(G.options & OPT_RAW)) {
-      printf("Converting while unpacking is not yet implemented :(\n");
+      fprintf(stderr, "Converting while unpacking is not yet implemented :(\n");
       return EXIT_FAILURE;
     }
 
     if (G.files.len > 2) {
-      printf("Only one archive can be unpacked at a time\n");
+      fprintf(stderr, "Only one archive can be unpacked at a time\n");
       return EXIT_FAILURE;
     }
 
@@ -252,7 +253,7 @@ int main(int argc, const char* argv[])
 
     PackFile pack = { };
     if (!OpenPackFile(&pack, pack_file->path)) {
-      printf("Error: %s\n", SDL_GetError());
+      fprintf(stderr, "Error: %s\n", SDL_GetError());
       return EXIT_FAILURE;
     }
 
@@ -267,15 +268,15 @@ int main(int argc, const char* argv[])
       void* buf = pack.ReadEntry(e);
       if (buf) {
         if (!SDL_SaveFile(dst, buf, e->len)) {
-          printf("Error: %s\n", SDL_GetError());
+          fprintf(stderr, "Error: %s\n", SDL_GetError());
         }
         MemFree(buf);
       } else {
-        printf("Error: %s\n", SDL_GetError());
+        fprintf(stderr, "Error: %s\n", SDL_GetError());
       }
     }
 
-    return EXIT_FAILURE;
+    return EXIT_SUCCESS;
   }
 
   // User wants to convert
@@ -283,13 +284,13 @@ int main(int argc, const char* argv[])
     // Load entire file into memory first
     Span<u8> bytes = { };
     if (!(bytes.buf = (u8*)SDL_LoadFile(G.files[0].path, &bytes.len))) {
-      printf("Error: %s\n", SDL_GetError());
+      fprintf(stderr, "Error: %s\n", SDL_GetError());
       return EXIT_FAILURE;
     }
 
     SDL_IOStream* io = SDL_IOFromConstMem(bytes.buf, bytes.len);
     if (!io) {
-      printf("Error: %s\n", SDL_GetError());
+      fprintf(stderr, "Error: %s\n", SDL_GetError());
       return EXIT_FAILURE;
     }
 
@@ -297,63 +298,64 @@ int main(int argc, const char* argv[])
     case FTYPE_BP2: {
       Bitmap bmp = { };
       if (!LoadBP2(&bmp, io)) {
-        printf("Error decoding: %s\n", SDL_GetError());
+        fprintf(stderr, "Error decoding: %s\n", SDL_GetError());
       }
       if (!SDL_SaveBMP(bmp.surf, G.files[1].path)) {
-        printf("Error writing: %s\n", SDL_GetError());
+        fprintf(stderr, "Error writing: %s\n", SDL_GetError());
       }
       return EXIT_SUCCESS;
     } break;
     case FTYPE_BP3: {
       Bitmap bmp = { };
       if (!LoadBP3(&bmp, io)) {
-        printf("Error decoding: %s\n", SDL_GetError());
+        fprintf(stderr, "Error decoding: %s\n", SDL_GetError());
       }
       if (!SDL_SaveBMP(bmp.surf, G.files[1].path)) {
-        printf("Error writing: %s\n", SDL_GetError());
+        fprintf(stderr, "Error writing: %s\n", SDL_GetError());
       }
       return EXIT_SUCCESS;
     } break;
     case FTYPE_TXT_1997: {
       char* text = DecodeTXT_1997(io);
       if (!text) {
-        printf("Error decoding: %s\n", SDL_GetError());
+        fprintf(stderr, "Error decoding: %s\n", SDL_GetError());
       }
       if (!SDL_SaveFile(G.files[1].path, text, SDL_strlen(text) + 1)) {
-        printf("Error writing: %s\n", SDL_GetError());
+        fprintf(stderr, "Error writing: %s\n", SDL_GetError());
       }
       return EXIT_SUCCESS;
     } break;
     case FTYPE_TXT_2006: {
       char* text = DecodeTXT_2006(io);
       if (!text) {
-        printf("Error decoding: %s\n", SDL_GetError());
+        fprintf(stderr, "Error decoding: %s\n", SDL_GetError());
       }
       if (!SDL_SaveFile(G.files[1].path, text, SDL_strlen(text) + 1)) {
-        printf("Error writing: %s\n", SDL_GetError());
+        fprintf(stderr, "Error writing: %s\n", SDL_GetError());
       }
       return EXIT_SUCCESS;
     } break;
     case FTYPE_TXT_UTF8: {
-      printf("TODO: FTYPE_TXT_UTF8\n");
+      fprintf(stderr, "TODO: FTYPE_TXT_UTF8\n");
       return EXIT_FAILURE;
     } break;
     case FTYPE_BIN:
     case FTYPE_LB5: {
-      printf("Unsupported source file type\n");
+      fprintf(stderr, "Unsupported source file type\n");
       return EXIT_FAILURE;
     } break;
     case FTYPE_UNKNOWN: {
-      printf("Unknown source file type\n");
+      fprintf(stderr, "Unknown source file type\n");
       return EXIT_FAILURE;
     } break;
     default: {
-      printf("Error: Unhandled but known file format. Please report this as a bug!\n");
+      fprintf(stderr, 
+              "Error: Unhandled but known file format. Please report this as a bug!\n");
       return EXIT_FAILURE;
     } break;
     }
   }
 
-  printf("Unknown operation. See ftconv --help\n");
+  fprintf(stderr, "Unknown operation. See ftconv --help\n");
   return EXIT_FAILURE;
 }
