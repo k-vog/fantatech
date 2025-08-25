@@ -269,10 +269,12 @@ int main(int argc, const char* argv[])
       if (buf) {
         if (!SDL_SaveFile(dst, buf, e->len)) {
           fprintf(stderr, "Error: %s\n", SDL_GetError());
+          return EXIT_FAILURE;
         }
         MemFree(buf);
       } else {
         fprintf(stderr, "Error: %s\n", SDL_GetError());
+        return EXIT_FAILURE;
       }
     }
 
@@ -299,9 +301,11 @@ int main(int argc, const char* argv[])
       Bitmap bmp = { };
       if (!LoadBP2(&bmp, io)) {
         fprintf(stderr, "Error decoding: %s\n", SDL_GetError());
+        return EXIT_FAILURE;
       }
       if (!SDL_SaveBMP(bmp.surf, G.files[1].path)) {
         fprintf(stderr, "Error writing: %s\n", SDL_GetError());
+        return EXIT_FAILURE;
       }
       return EXIT_SUCCESS;
     } break;
@@ -309,9 +313,11 @@ int main(int argc, const char* argv[])
       Bitmap bmp = { };
       if (!LoadBP3(&bmp, io)) {
         fprintf(stderr, "Error decoding: %s\n", SDL_GetError());
+        return EXIT_FAILURE;
       }
       if (!SDL_SaveBMP(bmp.surf, G.files[1].path)) {
         fprintf(stderr, "Error writing: %s\n", SDL_GetError());
+        return EXIT_FAILURE;
       }
       return EXIT_SUCCESS;
     } break;
@@ -319,9 +325,11 @@ int main(int argc, const char* argv[])
       char* text = DecodeTXT_1997(io);
       if (!text) {
         fprintf(stderr, "Error decoding: %s\n", SDL_GetError());
+        return EXIT_FAILURE;
       }
       if (!SDL_SaveFile(G.files[1].path, text, SDL_strlen(text) + 1)) {
         fprintf(stderr, "Error writing: %s\n", SDL_GetError());
+        return EXIT_FAILURE;
       }
       return EXIT_SUCCESS;
     } break;
@@ -329,9 +337,11 @@ int main(int argc, const char* argv[])
       char* text = DecodeTXT_2006(io);
       if (!text) {
         fprintf(stderr, "Error decoding: %s\n", SDL_GetError());
+        return EXIT_FAILURE;
       }
       if (!SDL_SaveFile(G.files[1].path, text, SDL_strlen(text) + 1)) {
         fprintf(stderr, "Error writing: %s\n", SDL_GetError());
+        return EXIT_FAILURE;
       }
       return EXIT_SUCCESS;
     } break;
