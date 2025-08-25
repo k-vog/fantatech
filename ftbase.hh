@@ -1,6 +1,7 @@
 #ifndef _FTECH_BASE_H_
 #define _FTECH_BASE_H_
 
+#include <cstdio>
 #include <cstdlib>
 
 #include <SDL3/SDL.h>
